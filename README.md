@@ -57,7 +57,7 @@ RealEstate-Project/
 ### 1. Clone and install dependencies
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RayenZakh/RealEstate-Project.git
 cd RealEstate-Project
 
 cd backend && npm install
