@@ -1,0 +1,91 @@
+.register-container {
+    min-height: calc(100vh - 72px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FAF7F2;
+    padding: 48px 24px;
+}
+
+.register-box {
+    width: 100%;
+    max-width: 420px;
+    background: #FFFFFF;
+    border: 1px solid #EDE7DA;
+    border-radius: 16px;
+    padding: 40px 36px;
+}
+
+.register-box h1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #1B2733;
+    margin: 0 0 8px;
+}
+
+.register-box > p {
+    font-size: 14px;
+    color: #8B96A3;
+    margin: 0 0 32px;
+}
+
+.forum {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1B2733;
+}
+
+.form-group input {
+    padding: 11px 14px;
+    border-radius: 8px;
+    border: 1px solid #E7E1D6;
+    background: #FAF7F2;
+    font-size: 14px;
+    color: #1B2733;
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.form-group input:focus {
+    border-color: #D9A24C;
+    background: #FFFFFF;
+}
+
+.form-group input::placeholder {
+    color: #A9B0BA;
+}
+
+.error-message {
+    font-size: 12px;
+    color: #C1503C;
+}
+
+.forum button[type="submit"] {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #1B2733;
+    color: #F3EFE6;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.forum button[type="submit"]:hover {
+    background: #D9A24C;
+    color: #1B2733;
+}

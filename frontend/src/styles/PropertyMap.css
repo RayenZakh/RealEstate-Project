@@ -1,0 +1,374 @@
+.property-map-page {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 72px);
+    overflow: hidden;
+    background: #FAF7F2;
+}
+
+/* ---------- Sidebar (absolute overlay, slides via transform) ---------- */
+
+.property-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 380px;
+    height: 100%;
+    z-index: 500;
+
+    background: #FFFFFF;
+    overflow-y: auto;
+    box-shadow: 4px 0 20px rgba(27, 39, 51, 0.1);
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar-open .property-sidebar {
+    transform: translateX(0);
+}
+
+.sidebar-closed .property-sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+}
+
+.sidebar-header {
+    padding: 30px 25px 20px;
+}
+
+.sidebar-header span {
+    color: #D9A24C;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+}
+
+.sidebar-header h1 {
+    margin: 10px 0 8px;
+    font-size: 24px;
+    font-weight: 500;
+    color: #1B2733;
+}
+
+.sidebar-header p {
+    margin: 0;
+    color: #8B96A3;
+    font-size: 13px;
+}
+
+/* Toggle to hide the sidebar */
+
+.sidebar-toggle {
+    position: absolute;
+    top: 18px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    z-index: 20;
+
+    border: none;
+    border-radius: 50%;
+    background: #FAF7F2;
+    color: #5B6672;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #F3EFE6;
+    color: #1B2733;
+}
+
+/* Button to reopen the sidebar once closed */
+
+.sidebar-open-button {
+    position: absolute;
+    top: 18px;
+    left: 15px;
+    width: 38px;
+    height: 38px;
+    z-index: 1100;
+
+    border: none;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #1B2733;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(27, 39, 51, 0.15);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.sidebar-open-button:hover {
+    background: #F3EFE6;
+    transform: scale(1.05);
+}
+
+/* ---------- Search + filters ---------- */
+
+.map-search {
+    padding: 0 25px 18px;
+}
+
+.map-search input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #E7E1D6;
+    border-radius: 8px;
+    background: #FAF7F2;
+    outline: none;
+    font-size: 14px;
+    color: #1B2733;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.map-search input:focus {
+    border-color: #D9A24C;
+    background: #FFFFFF;
+}
+
+.filter-group {
+    padding: 0 25px 18px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #1B2733;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-buttons button {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid #E7E1D6;
+    border-radius: 8px;
+    background: #FAF7F2;
+    color: #5B6672;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-buttons button.active {
+    background: #1B2733;
+    border-color: #1B2733;
+    color: #F3EFE6;
+}
+
+.filter-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #E7E1D6;
+    border-radius: 8px;
+    background: #FAF7F2;
+    color: #1B2733;
+    outline: none;
+    font-size: 13px;
+}
+
+/* ---------- Results ---------- */
+
+.result-count {
+    padding: 14px 25px;
+    border-top: 1px solid #F3EFE6;
+    border-bottom: 1px solid #F3EFE6;
+    color: #8B96A3;
+    font-size: 12px;
+}
+
+.sidebar-properties {
+    overflow-y: auto;
+}
+
+.sidebar-property {
+    padding: 16px 25px;
+    border-bottom: 1px solid #F3EFE6;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.sidebar-property:hover {
+    background: #FAF7F2;
+}
+
+.sidebar-property h3 {
+    margin: 8px 0 5px;
+    color: #1B2733;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.sidebar-property p {
+    margin: 0 0 7px;
+    color: #8B96A3;
+    font-size: 12px;
+}
+
+.sidebar-property strong {
+    color: #1B2733;
+    font-size: 14px;
+}
+
+.property-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.property-type-badge.sale {
+    background: #F3EFE6;
+    color: #1B2733;
+}
+
+.property-type-badge.rent {
+    background: #FAF1DE;
+    color: #B5822F;
+}
+
+.sidebar-add-button {
+    display: block;
+    margin: 16px 25px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #D9A24C;
+    color: #1B2733;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ---------- Map ---------- */
+
+.map-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.leaflet-map {
+    width: 100%;
+    height: 100%;
+}
+
+.map-error {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+
+    padding: 11px 16px;
+    border-radius: 8px;
+    background: #FBEAE6;
+    color: #A93E2C;
+    box-shadow: 0 3px 15px rgba(27, 39, 51, 0.1);
+    font-size: 13px;
+}
+
+/* ---------- Leaflet popup (unscoped: rendered outside the React tree) ---------- */
+
+.map-popup {
+    min-width: 190px;
+}
+
+.map-popup h3 {
+    margin: 0 0 5px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1B2733;
+}
+
+.map-popup p {
+    margin: 0 0 8px;
+    color: #8B96A3;
+    font-size: 12px;
+}
+
+.map-popup strong {
+    display: block;
+    color: #1B2733;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.popup-details {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.popup-details span {
+    padding: 4px 7px;
+    background: #F3EFE6;
+    border-radius: 5px;
+    color: #5B6672;
+    font-size: 10px;
+}
+
+.owner-contact {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #F3EFE6;
+}
+
+.owner-contact h4 {
+    font-size: 12px;
+    font-weight: 500;
+    color: #1B2733;
+    margin: 0 0 6px;
+}
+
+.owner-contact p {
+    font-size: 12px;
+    color: #5B6672;
+    margin: 0 0 3px;
+}
+
+.delete-property-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #C1503C;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.delete-property-btn:hover {
+    background: #A93E2C;
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 800px) {
+    .property-sidebar {
+        width: 85%;
+        max-width: 340px;
+    }
+}

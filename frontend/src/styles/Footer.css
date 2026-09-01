@@ -1,0 +1,139 @@
+.footer {
+    background: #1B2733;
+    color: #A9B4C0;
+    padding: 64px 24px 0;
+}
+
+.footer-container {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 48px;
+}
+
+/* ---------- Brand column ---------- */
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    font-size: 22px;
+    color: #D9A24C;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 500;
+    color: #F3EFE6;
+}
+
+.brand-description p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #8B96A3;
+    max-width: 34ch;
+}
+
+.social-icons {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #243544;
+    color: #A9B4C0;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.social-icons a:hover {
+    background: #D9A24C;
+    color: #1B2733;
+}
+
+/* ---------- Link columns ---------- */
+
+.brand-platforme h4,
+.brand-resources h4,
+.brand-contact h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #F3EFE6;
+    margin-bottom: 18px;
+}
+
+.brand-platforme ul,
+.brand-resources ul,
+.brand-contact ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.brand-platforme a,
+.brand-resources a,
+.brand-contact a,
+.brand-contact li {
+    font-size: 14px;
+    color: #8B96A3;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.brand-platforme a:hover,
+.brand-resources a:hover,
+.brand-contact a:hover {
+    color: #D9A24C;
+}
+
+/* ---------- Bottom bar ---------- */
+
+.bottom-footer {
+    grid-column: 1 / -1;
+    border-top: 1px solid #263644;
+    padding: 20px 0 28px;
+}
+
+.bottom-footer p {
+    font-size: 13px;
+    color: #6E7A87;
+    margin: 0;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+    .footer-container {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 40px;
+    }
+}
+
+@media (max-width: 560px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 36px;
+    }
+}
