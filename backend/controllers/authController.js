@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // POST /api/auth/register
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
     try {
         const { fullName, email, phone, password } = req.body;
 
@@ -38,13 +38,12 @@ const registerUser = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Register error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
     }
 };
 
 // POST /api/auth/login
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -54,7 +53,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select("+password");
 
         if (!user) {
             return res.status(401).json({
@@ -88,9 +87,28 @@ const loginUser = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Login error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
     }
 };
 
-module.exports = { registerUser, loginUser };
+// GET /api/auth/me (authenticated)
+const getMe = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            phone: user.phone
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { registerUser, loginUser, getMe };

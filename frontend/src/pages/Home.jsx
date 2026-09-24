@@ -1,6 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
-    FaSearch,
     FaMapMarkerAlt,
     FaHome,
     FaBuilding,
@@ -10,10 +9,7 @@ import {
 
 import "../styles/Home.css";
 
-
 function Home() {
-
-    const navigate = useNavigate();
 
 
     const featuredProperties = [
@@ -44,15 +40,6 @@ function Home() {
             image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80"
         }
     ];
-
-
-    const handleSearch = (event) => {
-
-        event.preventDefault();
-
-        navigate("/PropertyMap");
-    };
-
 
     return (
         

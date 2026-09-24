@@ -208,6 +208,11 @@
     background: #FAF7F2;
 }
 
+.sidebar-property.selected {
+    background: #F3ECE0;
+    border-left: 3px solid #D9A24C;
+}
+
 .sidebar-property h3 {
     margin: 8px 0 5px;
     color: #1B2733;

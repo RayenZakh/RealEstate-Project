@@ -1,7 +1,7 @@
 const Property = require("../models/Property");
 
 // GET /api/properties  (public)
-const getAllProperties = async (req, res) => {
+const getAllProperties = async (req, res, next) => {
     try {
         const properties = await Property
             .find()
@@ -10,13 +10,12 @@ const getAllProperties = async (req, res) => {
 
         res.status(200).json(properties);
     } catch (error) {
-        console.error("Get properties error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
     }
 };
 
 // GET /api/properties/:id  (public)
-const getPropertyById = async (req, res) => {
+const getPropertyById = async (req, res, next) => {
     try {
         const property = await Property
             .findById(req.params.id)
@@ -28,13 +27,12 @@ const getPropertyById = async (req, res) => {
 
         res.status(200).json(property);
     } catch (error) {
-        console.error("Get property error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
     }
 };
 
 // POST /api/properties  (authenticated)
-const createProperty = async (req, res) => {
+const createProperty = async (req, res, next) => {
     try {
         const {
             title,
@@ -79,13 +77,12 @@ const createProperty = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Create property error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
     }
 };
 
 // DELETE /api/properties/:id  (authenticated, owner only)
-const deleteProperty = async (req, res) => {
+const deleteProperty = async (req, res, next) => {
     try {
         const property = await Property.findById(req.params.id);
 
@@ -104,8 +101,62 @@ const deleteProperty = async (req, res) => {
         res.status(200).json({ message: "Property deleted successfully" });
 
     } catch (error) {
-        console.error("Delete property error:", error);
-        res.status(500).json({ message: "Server error" });
+        next(error);
+    }
+};
+
+// PUT /api/properties/:id  (authenticated, owner only)
+const updateProperty = async (req, res, next) => {
+    try {
+        const property = await Property.findById(req.params.id);
+
+        if (!property) {
+            return res.status(404).json({ message: "Property not found" });
+        }
+
+        // Ownership verification: only the owner can modify their property
+        if (property.owner.toString() !== req.user.userId) {
+            return res.status(403).json({
+                message: "You are not allowed to edit this property"
+            });
+        }
+
+        const {
+            title,
+            description,
+            price,
+            listingType,
+            propertyType,
+            bedrooms,
+            bathrooms,
+            area,
+            location
+        } = req.body;
+
+        if (title !== undefined) property.title = title;
+        if (description !== undefined) property.description = description;
+        if (price !== undefined) property.price = Number(price);
+        if (listingType !== undefined) property.listingType = listingType;
+        if (propertyType !== undefined) property.propertyType = propertyType;
+        if (bedrooms !== undefined) property.bedrooms = Number(bedrooms);
+        if (bathrooms !== undefined) property.bathrooms = Number(bathrooms);
+        if (area !== undefined) property.area = Number(area);
+
+        if (location) {
+            if (location.city) property.location.city = location.city;
+            if (location.latitude !== undefined) property.location.latitude = Number(location.latitude);
+            if (location.longitude !== undefined) property.location.longitude = Number(location.longitude);
+        }
+
+        await property.save();
+
+        res.status(200).json({
+            message: "Property updated successfully",
+            property
+        });
+
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -113,5 +164,6 @@ module.exports = {
     getAllProperties,
     getPropertyById,
     createProperty,
+    updateProperty,
     deleteProperty
 };

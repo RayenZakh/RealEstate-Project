@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
     MapContainer,
     TileLayer,
     Marker,
-    Popup
+    Popup,
+    useMap
 } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
@@ -23,6 +24,19 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png"
 });
 
+// Direct map manipulation component: uses useMap hook to pan/zoom when a property is selected
+function MapController({ selectedPosition }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (selectedPosition) {
+            map.flyTo(selectedPosition, 14, { duration: 1.2 });
+        }
+    }, [selectedPosition, map]);
+
+    return null;
+}
+
 function PropertyMap() {
 
     const { user } = useAuth();
@@ -35,9 +49,11 @@ function PropertyMap() {
     const [error, setError] = useState(null);
     const [search, setSearch] = useState("");
 
-    // Read the initial filter from the URL (?listingType=sale or ?listingType=rent),
-    // so links like the footer's "Buy"/"Rent" actually pre-filter the list.
-    // Falls back to "all" if there's no query param or it's an unrecognized value.
+    const [selectedPosition, setSelectedPosition] = useState(null);
+    const [selectedPropertyId, setSelectedPropertyId] = useState(null);
+    const markerRefs = useRef({});
+
+    // Read the initial filter from the URL (?listingType=sale or ?listingType=rent)
     const [listingType, setListingType] = useState(() => {
         const fromUrl = searchParams.get("listingType");
         return fromUrl === "sale" || fromUrl === "rent" ? fromUrl : "all";
@@ -46,8 +62,6 @@ function PropertyMap() {
     const [propertyType, setPropertyType] = useState("all");
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    // Keep the URL in sync when the filter changes, so the current view stays
-    // shareable/bookmarkable and browser back/forward works as expected.
     const handleListingTypeChange = (value) => {
         setListingType(value);
 
@@ -65,20 +79,51 @@ function PropertyMap() {
     const defaultPosition = [34.0, 9.0];
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchProperties = async () => {
             try {
                 const response = await getProperties();
+                if (!isMounted) return;
                 setProperties(response.data);
-            } catch (error) {
-                console.error("Error loading properties:", error);
+
+                // If URL has ?id=..., highlight that property on load
+                const targetId = searchParams.get("id");
+                if (targetId) {
+                    const target = response.data.find((p) => p._id === targetId);
+                    if (target) {
+                        setSelectedPropertyId(target._id);
+                        setSelectedPosition([target.location.latitude, target.location.longitude]);
+                        setTimeout(() => {
+                            const marker = markerRefs.current[target._id];
+                            if (marker) marker.openPopup();
+                        }, 500);
+                    }
+                }
+            } catch (err) {
+                if (!isMounted) return;
+                console.error("Error loading properties:", err);
                 setError("Could not load properties.");
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         fetchProperties();
-    }, []);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [searchParams]);
+
+    const handleSelectProperty = (property) => {
+        setSelectedPosition([property.location.latitude, property.location.longitude]);
+        setSelectedPropertyId(property._id);
+        const marker = markerRefs.current[property._id];
+        if (marker) {
+            marker.openPopup();
+        }
+    };
 
     const handleDelete = async (propertyId) => {
         const confirmDelete = window.confirm(
@@ -96,11 +141,11 @@ function PropertyMap() {
 
             alert("Property deleted successfully.");
 
-        } catch (error) {
-            console.error("Delete property error:", error);
+        } catch (err) {
+            console.error("Delete property error:", err);
 
-            if (error.response) {
-                alert(error.response.data.message || "Could not delete property.");
+            if (err.response) {
+                alert(err.response.data.message || "Could not delete property.");
             } else {
                 alert("Could not connect to the server.");
             }
@@ -193,7 +238,11 @@ function PropertyMap() {
 
                 <div className="sidebar-properties">
                     {filteredProperties.map((property) => (
-                        <div className="sidebar-property" key={property._id}>
+                        <div
+                            className={`sidebar-property ${selectedPropertyId === property._id ? "selected" : ""}`}
+                            key={property._id}
+                            onClick={() => handleSelectProperty(property)}
+                        >
                             <div>
                                 <span className={`property-type-badge ${property.listingType}`}>
                                     {property.listingType === "sale" ? "For Sale" : "For Rent"}
@@ -209,7 +258,7 @@ function PropertyMap() {
                     ))}
                 </div>
 
-                <Link to="/AddProperty" className="sidebar-add-button">
+                <Link to="/add-property" className="sidebar-add-button">
                     + Add your property
                 </Link>
 
@@ -241,9 +290,14 @@ function PropertyMap() {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
+                    <MapController selectedPosition={selectedPosition} />
+
                     {filteredProperties.map((property) => (
                         <Marker
                             key={property._id}
+                            ref={(ref) => {
+                                if (ref) markerRefs.current[property._id] = ref;
+                            }}
                             position={[property.location.latitude, property.location.longitude]}
                         >
                             <Popup>
@@ -277,12 +331,31 @@ function PropertyMap() {
                                                 ? property.owner._id
                                                 : property.owner
                                         ) && (
-                                            <button
-                                                className="delete-property-btn"
-                                                onClick={() => handleDelete(property._id)}
-                                            >
-                                                Delete Property
-                                            </button>
+                                            <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                                                <Link
+                                                    to={`/properties/${property._id}/edit`}
+                                                    style={{
+                                                        flex: 1,
+                                                        textAlign: "center",
+                                                        padding: "7px 10px",
+                                                        background: "#D9A24C",
+                                                        color: "#1B2733",
+                                                        borderRadius: "4px",
+                                                        textDecoration: "none",
+                                                        fontSize: "12px",
+                                                        fontWeight: "600"
+                                                    }}
+                                                >
+                                                    Edit
+                                                </Link>
+                                                <button
+                                                    className="delete-property-btn"
+                                                    style={{ flex: 1, margin: 0 }}
+                                                    onClick={() => handleDelete(property._id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         )}
 
                                 </div>

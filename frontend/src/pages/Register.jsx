@@ -87,8 +87,8 @@ function Register() {
                             {...register("phone", {
                                 required: "Phone number is required",
                                 pattern: {
-                                    value: /^\d{2}\s?\d{3}\s?\d{3}$/,
-                                    message: "Use format: +216 XX XXX XXX"
+                                    value: /^(\+216\s?)?[0-9]{2}\s?[0-9]{3}\s?[0-9]{3}$/,
+                                    message: "Use format: +216 XX XXX XXX or XX XXX XXX"
                                 }
                             })}
                             type="tel"

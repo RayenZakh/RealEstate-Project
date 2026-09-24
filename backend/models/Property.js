@@ -16,7 +16,8 @@ const propertySchema = new mongoose.Schema(
 
         price: {
             type: Number,
-            required: true
+            required: [true, "Price is required"],
+            min: [0, "Price cannot be negative"]
         },
 
         listingType: {
@@ -33,17 +34,20 @@ const propertySchema = new mongoose.Schema(
 
         bedrooms: {
             type: Number,
-            default: 0
+            default: 0,
+            min: [0, "Bedrooms cannot be negative"]
         },
 
         bathrooms: {
             type: Number,
-            default: 0
+            default: 0,
+            min: [0, "Bathrooms cannot be negative"]
         },
 
         area: {
             type: Number,
-            required: true
+            required: [true, "Area is required"],
+            min: [1, "Area must be at least 1 square meter"]
         },
 
         location: {
