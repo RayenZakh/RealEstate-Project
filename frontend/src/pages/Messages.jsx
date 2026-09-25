@@ -67,6 +67,7 @@ function Messages() {
 
             // Mark messages as read
             await markAsRead(conversationId);
+            window.dispatchEvent(new Event("messages_read"));
 
             // Update unread count in the conversations list
             setConversations((prev) =>
@@ -108,6 +109,7 @@ function Messages() {
                 // Mark as read immediately if we're viewing this conversation
                 if (message.sender._id !== user.id) {
                     markAsRead(currentConvId);
+                    window.dispatchEvent(new Event("messages_read"));
                     socket.emit("message_read", currentConvId);
                 }
             }

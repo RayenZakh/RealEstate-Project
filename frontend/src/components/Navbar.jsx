@@ -1,14 +1,68 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaHome, FaPlus, FaUser, FaSignInAlt, FaBars, FaTimes, FaEnvelope } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { getConversations } from "../services/conversationService";
+import { connectSocket } from "../services/socketService";
 import "../styles/Navbar.css";
 
 function Navbar() {
 
     const [menuOpen, setMenuOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
+    const location = useLocation();
     const { token, user, logout } = useAuth();
+
+    const fetchUnreadCount = useCallback(async () => {
+        if (!token) {
+            setUnreadCount(0);
+            return;
+        }
+        try {
+            const res = await getConversations();
+            if (Array.isArray(res.data)) {
+                const total = res.data.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+                setUnreadCount(total);
+            }
+        } catch (err) {
+            // Silently handle request failure
+        }
+    }, [token]);
+
+    useEffect(() => {
+        if (!token) {
+            setUnreadCount(0);
+            return;
+        }
+
+        fetchUnreadCount();
+
+        const socket = connectSocket(token);
+
+        const handleUpdate = () => {
+            fetchUnreadCount();
+        };
+
+        socket.on("conversation_updated", handleUpdate);
+        socket.on("new_message", handleUpdate);
+        socket.on("messages_marked_read", handleUpdate);
+        window.addEventListener("messages_read", handleUpdate);
+
+        return () => {
+            socket.off("conversation_updated", handleUpdate);
+            socket.off("new_message", handleUpdate);
+            socket.off("messages_marked_read", handleUpdate);
+            window.removeEventListener("messages_read", handleUpdate);
+        };
+    }, [token, fetchUnreadCount]);
+
+    // Re-fetch whenever navigating between pages
+    useEffect(() => {
+        if (token) {
+            fetchUnreadCount();
+        }
+    }, [location.pathname, token, fetchUnreadCount]);
 
     const handleLogout = () => {
         logout();
@@ -45,7 +99,10 @@ function Navbar() {
 
                         <>
                             <Link to="/messages" className="navbar-messages">
-                                <FaEnvelope />
+                                <span className="navbar-messages-icon-wrapper">
+                                    <FaEnvelope />
+                                    {unreadCount > 0 && <span className="navbar-unread-dot" />}
+                                </span>
                                 <span>Messages</span>
                             </Link>
 
@@ -94,7 +151,10 @@ function Navbar() {
 
                     {token ? (
                         <>
-                            <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
+                            <Link to="/messages" onClick={() => setMenuOpen(false)} className="mobile-messages-link">
+                                <span>Messages</span>
+                                {unreadCount > 0 && <span className="navbar-unread-dot mobile-dot" />}
+                            </Link>
                             <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
                             <button onClick={handleLogout}>Logout</button>
                         </>
