@@ -43,7 +43,8 @@ const createProperty = async (req, res, next) => {
             bedrooms,
             bathrooms,
             area,
-            location
+            location,
+            images
         } = req.body;
 
         if (
@@ -66,6 +67,7 @@ const createProperty = async (req, res, next) => {
             bathrooms: bathrooms || 0,
             area,
             location,
+            images: Array.isArray(images) ? images : [],
             owner: req.user.userId
         });
 
@@ -130,7 +132,8 @@ const updateProperty = async (req, res, next) => {
             bedrooms,
             bathrooms,
             area,
-            location
+            location,
+            images
         } = req.body;
 
         if (title !== undefined) property.title = title;
@@ -146,6 +149,10 @@ const updateProperty = async (req, res, next) => {
             if (location.city) property.location.city = location.city;
             if (location.latitude !== undefined) property.location.latitude = Number(location.latitude);
             if (location.longitude !== undefined) property.location.longitude = Number(location.longitude);
+        }
+
+        if (images !== undefined) {
+            property.images = Array.isArray(images) ? images : [];
         }
 
         await property.save();

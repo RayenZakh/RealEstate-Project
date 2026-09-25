@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaUser, FaEnvelope, FaPhone, FaPlus, FaTrash, FaMapMarkerAlt, FaBuilding } from "react-icons/fa";
 import { useAuth } from "../hooks/useAuth";
 import { getProperties, deleteProperty as deletePropertyRequest } from "../services/propertyService";
+import { getImageUrl } from "../utils/imageHelper";
 
 function Profile() {
     const { user } = useAuth();
@@ -169,39 +170,56 @@ function Profile() {
                                 background: "#FFFFFF",
                                 borderRadius: "8px",
                                 border: "1px solid #EDE7DA",
-                                padding: "20px",
+                                overflow: "hidden",
                                 display: "flex",
                                 flexDirection: "column",
                                 justifyContent: "space-between"
                             }}
                         >
                             <div>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                                <div style={{ height: "150px", overflow: "hidden", background: "#F5F2EC", position: "relative" }}>
+                                    <img
+                                        src={getImageUrl(property.images?.[0])}
+                                        alt={property.title}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                    />
                                     <span style={{
+                                        position: "absolute",
+                                        top: "10px",
+                                        left: "10px",
                                         fontSize: "11px",
                                         fontWeight: "600",
                                         textTransform: "uppercase",
-                                        padding: "3px 8px",
+                                        padding: "4px 8px",
                                         borderRadius: "4px",
                                         background: property.listingType === "sale" ? "#EBF8FF" : "#FEFCBF",
-                                        color: property.listingType === "sale" ? "#2B6CB0" : "#B7791F"
+                                        color: property.listingType === "sale" ? "#2B6CB0" : "#B7791F",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                     }}>
                                         {property.listingType === "sale" ? "For Sale" : "For Rent"}
                                     </span>
-                                    <span style={{ fontSize: "13px", color: "#6B7C8E" }}>
+                                </div>
+
+                                <div style={{ padding: "18px 20px 8px" }}>
+                                    <span style={{ fontSize: "12px", color: "#6B7C8E", textTransform: "capitalize" }}>
                                         {property.propertyType}
                                     </span>
+                                    <h3 style={{ fontSize: "17px", color: "#1B2733", margin: "6px 0 8px" }}>
+                                        <Link
+                                            to={`/properties/${property._id}`}
+                                            style={{ color: "inherit", textDecoration: "none" }}
+                                        >
+                                            {property.title}
+                                        </Link>
+                                    </h3>
+                                    <p style={{ color: "#6B7C8E", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px", margin: "4px 0" }}>
+                                        <FaMapMarkerAlt /> {property.location?.city}
+                                    </p>
+                                    <p style={{ fontSize: "18px", fontWeight: "700", color: "#1B2733", margin: "10px 0 4px" }}>
+                                        {property.price?.toLocaleString()} TND
+                                        {property.listingType === "rent" ? " / mo" : ""}
+                                    </p>
                                 </div>
-                                <h3 style={{ fontSize: "17px", color: "#1B2733", margin: "8px 0" }}>
-                                    {property.title}
-                                </h3>
-                                <p style={{ color: "#6B7C8E", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px", margin: "4px 0" }}>
-                                    <FaMapMarkerAlt /> {property.location?.city}
-                                </p>
-                                <p style={{ fontSize: "18px", fontWeight: "700", color: "#1B2733", margin: "12px 0 6px" }}>
-                                    {property.price?.toLocaleString()} TND
-                                    {property.listingType === "rent" ? " / mo" : ""}
-                                </p>
                             </div>
 
                             <div style={{
@@ -209,20 +227,34 @@ function Profile() {
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 borderTop: "1px solid #F0EBE1",
-                                paddingTop: "14px",
-                                marginTop: "14px"
+                                padding: "14px 20px",
+                                marginTop: "10px"
                             }}>
-                                <Link
-                                    to={`/properties?id=${property._id}`}
-                                    style={{
-                                        color: "#1B2733",
-                                        fontSize: "13px",
-                                        fontWeight: "500",
-                                        textDecoration: "none"
-                                    }}
-                                >
-                                    View on Map &rarr;
-                                </Link>
+                                <div style={{ display: "flex", gap: "12px" }}>
+                                    <Link
+                                        to={`/properties/${property._id}`}
+                                        style={{
+                                            color: "#1B2733",
+                                            fontSize: "13px",
+                                            fontWeight: "500",
+                                            textDecoration: "none"
+                                        }}
+                                    >
+                                        Details
+                                    </Link>
+                                    <span style={{ color: "#D0D7DE" }}>|</span>
+                                    <Link
+                                        to={`/properties?id=${property._id}`}
+                                        style={{
+                                            color: "#6B7C8E",
+                                            fontSize: "13px",
+                                            fontWeight: "500",
+                                            textDecoration: "none"
+                                        }}
+                                    >
+                                        Map
+                                    </Link>
+                                </div>
                                 <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
                                     <Link
                                         to={`/properties/${property._id}/edit`}

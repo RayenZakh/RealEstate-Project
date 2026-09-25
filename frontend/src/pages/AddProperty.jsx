@@ -12,7 +12,8 @@ import "leaflet/dist/leaflet.css";
 import "../styles/AddProperty.css";
 
 import L from "leaflet";
-import { createProperty } from "../services/propertyService";
+import { FaTimes, FaCamera } from "react-icons/fa";
+import { createProperty, uploadPropertyImages } from "../services/propertyService";
 
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -49,12 +50,48 @@ function AddProperty() {
     });
 
     const [position, setPosition] = useState(null);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData(previous => ({ ...previous, [name]: value }));
+    };
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        if (imageFiles.length + files.length > 10) {
+            setError("You can upload a maximum of 10 images.");
+            return;
+        }
+
+        const validFiles = [];
+        const validPreviews = [];
+        for (const file of files) {
+            if (!file.type.startsWith("image/")) {
+                setError(`File "${file.name}" is not an image.`);
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                setError(`Image "${file.name}" exceeds the 5MB size limit.`);
+                return;
+            }
+            validFiles.push(file);
+            validPreviews.push(URL.createObjectURL(file));
+        }
+
+        setImageFiles((prev) => [...prev, ...validFiles]);
+        setImagePreviews((prev) => [...prev, ...validPreviews]);
+        setError("");
+    };
+
+    const handleRemoveImage = (index) => {
+        setImageFiles((prev) => prev.filter((_, i) => i !== index));
+        setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (event) => {
@@ -69,6 +106,12 @@ function AddProperty() {
         setLoading(true);
 
         try {
+            let uploadedUrls = [];
+            if (imageFiles.length > 0) {
+                const uploadRes = await uploadPropertyImages(imageFiles);
+                uploadedUrls = uploadRes.data.urls || [];
+            }
+
             const propertyData = {
                 title: formData.title,
                 description: formData.description,
@@ -82,19 +125,20 @@ function AddProperty() {
                     city: formData.city,
                     latitude: position[0],
                     longitude: position[1]
-                }
+                },
+                images: uploadedUrls
             };
 
             await createProperty(propertyData);
 
             alert("Property added successfully!");
-            navigate("/propertyMap");
+            navigate("/properties");
 
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
 
-            if (error.response) {
-                setError(error.response.data.message);
+            if (err.response) {
+                setError(err.response.data.message);
             } else {
                 setError("Could not connect to the server.");
             }
@@ -224,6 +268,93 @@ function AddProperty() {
                         </div>
 
                     </div>
+                </section>
+
+                <section className="form-section">
+                    <h2>Property photos</h2>
+                    <p className="section-description">
+                        Add up to 10 photos of your property (JPEG, PNG, WebP — max 5MB each).
+                    </p>
+
+                    <div style={{ marginTop: "14px" }}>
+                        <label
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                background: "#1B2733",
+                                color: "#FFFFFF",
+                                padding: "10px 18px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: "500"
+                            }}
+                        >
+                            <FaCamera /> Select Photos
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/jpeg,image/png,image/webp,image/jpg"
+                                onChange={handleImageChange}
+                                style={{ display: "none" }}
+                            />
+                        </label>
+                        <span style={{ marginLeft: "12px", color: "#6B7C8E", fontSize: "13px" }}>
+                            {imageFiles.length} {imageFiles.length === 1 ? "photo" : "photos"} selected
+                        </span>
+                    </div>
+
+                    {imagePreviews.length > 0 && (
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                            gap: "12px",
+                            marginTop: "16px"
+                        }}>
+                            {imagePreviews.map((previewUrl, idx) => (
+                                <div
+                                    key={idx}
+                                    style={{
+                                        position: "relative",
+                                        borderRadius: "6px",
+                                        overflow: "hidden",
+                                        height: "100px",
+                                        border: "1px solid #EDE7DA"
+                                    }}
+                                >
+                                    <img
+                                        src={previewUrl}
+                                        alt={`Preview ${idx + 1}`}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveImage(idx)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "4px",
+                                            right: "4px",
+                                            background: "rgba(0, 0, 0, 0.65)",
+                                            color: "#FFFFFF",
+                                            border: "none",
+                                            borderRadius: "50%",
+                                            width: "22px",
+                                            height: "22px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            fontSize: "11px"
+                                        }}
+                                        title="Remove photo"
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 <section className="form-section">

@@ -9,8 +9,10 @@ import {
 import "leaflet/dist/leaflet.css";
 import "../styles/AddProperty.css";
 import L from "leaflet";
-import { getPropertyById, updateProperty } from "../services/propertyService";
+import { FaTimes, FaCamera } from "react-icons/fa";
+import { getPropertyById, updateProperty, uploadPropertyImages } from "../services/propertyService";
 import { useAuth } from "../hooks/useAuth";
+import { getImageUrl } from "../utils/imageHelper";
 
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -48,6 +50,9 @@ function EditProperty() {
     });
 
     const [position, setPosition] = useState(null);
+    const [existingImages, setExistingImages] = useState([]);
+    const [newFiles, setNewFiles] = useState([]);
+    const [newPreviews, setNewPreviews] = useState([]);
     const [fetching, setFetching] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -82,6 +87,8 @@ function EditProperty() {
                     city: property.location?.city || ""
                 });
 
+                setExistingImages(Array.isArray(property.images) ? property.images : []);
+
                 if (property.location?.latitude && property.location?.longitude) {
                     setPosition([property.location.latitude, property.location.longitude]);
                 }
@@ -106,6 +113,45 @@ function EditProperty() {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleRemoveExistingImage = (index) => {
+        setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleNewImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        const totalCount = existingImages.length + newFiles.length + files.length;
+        if (totalCount > 10) {
+            setError("You can have a maximum of 10 images in total.");
+            return;
+        }
+
+        const validFiles = [];
+        const validPreviews = [];
+        for (const file of files) {
+            if (!file.type.startsWith("image/")) {
+                setError(`File "${file.name}" is not an image.`);
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                setError(`Image "${file.name}" exceeds the 5MB size limit.`);
+                return;
+            }
+            validFiles.push(file);
+            validPreviews.push(URL.createObjectURL(file));
+        }
+
+        setNewFiles((prev) => [...prev, ...validFiles]);
+        setNewPreviews((prev) => [...prev, ...validPreviews]);
+        setError("");
+    };
+
+    const handleRemoveNewImage = (index) => {
+        setNewFiles((prev) => prev.filter((_, i) => i !== index));
+        setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
@@ -118,6 +164,14 @@ function EditProperty() {
         setLoading(true);
 
         try {
+            let uploadedUrls = [];
+            if (newFiles.length > 0) {
+                const uploadRes = await uploadPropertyImages(newFiles);
+                uploadedUrls = uploadRes.data.urls || [];
+            }
+
+            const finalImages = [...existingImages, ...uploadedUrls];
+
             const propertyData = {
                 title: formData.title,
                 description: formData.description,
@@ -131,7 +185,8 @@ function EditProperty() {
                     city: formData.city,
                     latitude: position[0],
                     longitude: position[1]
-                }
+                },
+                images: finalImages
             };
 
             await updateProperty(id, propertyData);
@@ -285,6 +340,155 @@ function EditProperty() {
                             />
                         </div>
                     </div>
+                </section>
+
+                <section className="form-section">
+                    <h2>Property photos</h2>
+                    <p className="section-description">
+                        Manage your property photos. Add new photos or remove existing ones (maximum 10 photos total).
+                    </p>
+
+                    {/* Existing photos */}
+                    {existingImages.length > 0 && (
+                        <div style={{ marginTop: "16px" }}>
+                            <strong style={{ fontSize: "14px", color: "#1B2733", display: "block", marginBottom: "8px" }}>
+                                Current photos ({existingImages.length})
+                            </strong>
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                                gap: "12px"
+                            }}>
+                                {existingImages.map((imgUrl, idx) => (
+                                    <div
+                                        key={`existing-${idx}`}
+                                        style={{
+                                            position: "relative",
+                                            borderRadius: "6px",
+                                            overflow: "hidden",
+                                            height: "100px",
+                                            border: "1px solid #EDE7DA"
+                                        }}
+                                    >
+                                        <img
+                                            src={getImageUrl(imgUrl)}
+                                            alt={`Property ${idx + 1}`}
+                                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveExistingImage(idx)}
+                                            style={{
+                                                position: "absolute",
+                                                top: "4px",
+                                                right: "4px",
+                                                background: "rgba(197, 48, 48, 0.85)",
+                                                color: "#FFFFFF",
+                                                border: "none",
+                                                borderRadius: "50%",
+                                                width: "22px",
+                                                height: "22px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                cursor: "pointer",
+                                                fontSize: "11px"
+                                            }}
+                                            title="Delete photo"
+                                        >
+                                            <FaTimes />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Add new photos button */}
+                    <div style={{ marginTop: "18px" }}>
+                        <label
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                background: "#1B2733",
+                                color: "#FFFFFF",
+                                padding: "10px 18px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: "500"
+                            }}
+                        >
+                            <FaCamera /> Add New Photos
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/jpeg,image/png,image/webp,image/jpg"
+                                onChange={handleNewImageChange}
+                                style={{ display: "none" }}
+                            />
+                        </label>
+                        <span style={{ marginLeft: "12px", color: "#6B7C8E", fontSize: "13px" }}>
+                            {newFiles.length} new {newFiles.length === 1 ? "photo" : "photos"} selected
+                        </span>
+                    </div>
+
+                    {/* New photo previews */}
+                    {newPreviews.length > 0 && (
+                        <div style={{ marginTop: "16px" }}>
+                            <strong style={{ fontSize: "14px", color: "#1B2733", display: "block", marginBottom: "8px" }}>
+                                New photo previews (to be saved)
+                            </strong>
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                                gap: "12px"
+                            }}>
+                                {newPreviews.map((previewUrl, idx) => (
+                                    <div
+                                        key={`new-${idx}`}
+                                        style={{
+                                            position: "relative",
+                                            borderRadius: "6px",
+                                            overflow: "hidden",
+                                            height: "100px",
+                                            border: "2px dashed #D9A24C"
+                                        }}
+                                    >
+                                        <img
+                                            src={previewUrl}
+                                            alt={`New preview ${idx + 1}`}
+                                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveNewImage(idx)}
+                                            style={{
+                                                position: "absolute",
+                                                top: "4px",
+                                                right: "4px",
+                                                background: "rgba(0, 0, 0, 0.65)",
+                                                color: "#FFFFFF",
+                                                border: "none",
+                                                borderRadius: "50%",
+                                                width: "22px",
+                                                height: "22px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                cursor: "pointer",
+                                                fontSize: "11px"
+                                            }}
+                                            title="Cancel photo"
+                                        >
+                                            <FaTimes />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 <section className="form-section">

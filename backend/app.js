@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const authRoutes = require("./routes/authRoutes");
 const propertyRoutes = require("./routes/propertyRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
@@ -26,8 +28,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve uploaded static image files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
+app.use("/api/upload", uploadRoutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "Dari backend is running" });

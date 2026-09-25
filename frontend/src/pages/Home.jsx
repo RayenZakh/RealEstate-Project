@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
     FaMapMarkerAlt,
@@ -8,38 +9,75 @@ import {
 } from "react-icons/fa";
 
 import "../styles/Home.css";
+import { getProperties } from "../services/propertyService";
+import { getImageUrl } from "../utils/imageHelper";
 
 function Home() {
+    const [liveProperties, setLiveProperties] = useState([]);
 
+    useEffect(() => {
+        let isMounted = true;
 
-    const featuredProperties = [
+        const fetchFeatured = async () => {
+            try {
+                const res = await getProperties();
+                if (!isMounted) return;
+                if (res.data && res.data.length > 0) {
+                    setLiveProperties(res.data.slice(0, 3));
+                }
+            } catch {
+                // Silently fallback to static featured properties
+            }
+        };
+
+        fetchFeatured();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const staticProperties = [
         {
-            id: 1,
+            id: "static-1",
             title: "Modern Apartment",
             location: "Sfax, Tunisia",
             price: "180,000 TND",
             type: "For Sale",
-            image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80"
+            image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80",
+            link: "/properties"
         },
-
         {
-            id: 2,
+            id: "static-2",
             title: "Beautiful Family House",
             location: "Moknine, Tunisia",
             price: "950 TND / month",
             type: "For Rent",
-            image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+            image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80",
+            link: "/properties"
         },
-
         {
-            id: 3,
+            id: "static-3",
             title: "Luxury Villa",
             location: "Sousse, Tunisia",
             price: "650,000 TND",
             type: "For Sale",
-            image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80"
+            image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80",
+            link: "/properties"
         }
     ];
+
+    const displayProperties = liveProperties.length > 0
+        ? liveProperties.map((p) => ({
+            id: p._id,
+            title: p.title,
+            location: p.location?.city ? `${p.location.city}, Tunisia` : "Tunisia",
+            price: `${p.price?.toLocaleString()} TND${p.listingType === "rent" ? " / month" : ""}`,
+            type: p.listingType === "sale" ? "For Sale" : "For Rent",
+            image: getImageUrl(p.images?.[0]),
+            link: `/properties/${p._id}`
+        }))
+        : staticProperties;
 
     return (
         
@@ -199,7 +237,7 @@ function Home() {
 
                 <div className="property-grid">
 
-                    {featuredProperties.map((property) => (
+                    {displayProperties.map((property) => (
 
                         <div
                             className="property-card"
@@ -211,6 +249,7 @@ function Home() {
                                 <img
                                     src={property.image}
                                     alt={property.title}
+                                    style={{ width: "100%", height: "220px", objectFit: "cover" }}
                                 />
 
                                 <span
@@ -246,7 +285,7 @@ function Home() {
                                         {property.price}
                                     </strong>
 
-                                    <Link to="/PropertyMap">
+                                    <Link to={property.link || "/properties"}>
                                         View
                                     </Link>
 

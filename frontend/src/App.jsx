@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import EditProperty from "./pages/EditProperty";
+import PropertyDetails from "./pages/PropertyDetails";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/properties" element={<PropertyMap />} />
+                    <Route path="/properties/:id" element={<PropertyDetails />} />
                     <Route path="/PropertyMap" element={<PropertyMap />} />
                     <Route
                         path="/add-property"

@@ -15,6 +15,7 @@ import "../styles/PropertyMap.css";
 import L from "leaflet";
 import { getProperties, deleteProperty as deletePropertyRequest } from "../services/propertyService";
 import { useAuth } from "../hooks/useAuth";
+import { getImageUrl } from "../utils/imageHelper";
 
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -243,7 +244,12 @@ function PropertyMap() {
                             key={property._id}
                             onClick={() => handleSelectProperty(property)}
                         >
-                            <div>
+                            <img
+                                src={getImageUrl(property.images?.[0])}
+                                alt={property.title}
+                                className="sidebar-property-img"
+                            />
+                            <div className="sidebar-property-info">
                                 <span className={`property-type-badge ${property.listingType}`}>
                                     {property.listingType === "sale" ? "For Sale" : "For Rent"}
                                 </span>
@@ -302,6 +308,11 @@ function PropertyMap() {
                         >
                             <Popup>
                                 <div className="map-popup">
+                                    <img
+                                        src={getImageUrl(property.images?.[0])}
+                                        alt={property.title}
+                                        className="popup-image"
+                                    />
 
                                     <h3>{property.title}</h3>
                                     <p>{property.location.city}</p>
@@ -311,6 +322,10 @@ function PropertyMap() {
                                         <span>{property.propertyType}</span>
                                         <span>{property.area} m²</span>
                                     </div>
+
+                                    <Link to={`/properties/${property._id}`} className="popup-view-link">
+                                        View Full Details &rarr;
+                                    </Link>
 
                                     {property.owner && (
                                         <div className="owner-contact">
