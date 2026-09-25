@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import EditProperty from "./pages/EditProperty";
 import PropertyDetails from "./pages/PropertyDetails";
 import NotFound from "./pages/NotFound";
+import Messages from "./pages/Messages";
 
 function App() {
     return (
@@ -52,6 +53,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Profile />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/messages"
+                        element={
+                            <ProtectedRoute>
+                                <Messages />
                             </ProtectedRoute>
                         }
                     />

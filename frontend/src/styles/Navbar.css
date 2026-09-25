@@ -66,6 +66,20 @@
     text-decoration: none;
 }
 
+.navbar-messages {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #5B6672;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.navbar-messages:hover {
+    color: #D9A24C;
+}
+
 .login-button,
 .register-button,
 .logout-button {

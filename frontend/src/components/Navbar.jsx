@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaHome, FaPlus, FaUser, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
+import { FaHome, FaPlus, FaUser, FaSignInAlt, FaBars, FaTimes, FaEnvelope } from "react-icons/fa";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import "../styles/Navbar.css";
@@ -44,6 +44,11 @@ function Navbar() {
                     {token && user ? (
 
                         <>
+                            <Link to="/messages" className="navbar-messages">
+                                <FaEnvelope />
+                                <span>Messages</span>
+                            </Link>
+
                             <Link to="/profile" className="navbar-user">
                                 <FaUser />
                                 <span>{user.fullName}</span>
@@ -89,6 +94,7 @@ function Navbar() {
 
                     {token ? (
                         <>
+                            <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
                             <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
                             <button onClick={handleLogout}>Logout</button>
                         </>

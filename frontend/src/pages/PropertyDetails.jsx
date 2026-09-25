@@ -20,10 +20,12 @@ import {
     FaChevronRight,
     FaArrowLeft,
     FaEdit,
-    FaTrash
+    FaTrash,
+    FaComments
 } from "react-icons/fa";
 
 import { getPropertyById, deleteProperty as deletePropertyRequest } from "../services/propertyService";
+import { createConversation } from "../services/conversationService";
 import { useAuth } from "../hooks/useAuth";
 import { getImageUrl, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/imageHelper";
 
@@ -45,6 +47,7 @@ function PropertyDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [contactLoading, setContactLoading] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -79,6 +82,24 @@ function PropertyDetails() {
         } catch (err) {
             console.error("Delete property error:", err);
             alert(err.response?.data?.message || "Could not delete property.");
+        }
+    };
+
+    const handleContactOwner = async () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+
+        setContactLoading(true);
+        try {
+            const res = await createConversation(id);
+            navigate(`/messages?conversation=${res.data._id}`);
+        } catch (err) {
+            const msg = err.response?.data?.message || "Could not start conversation.";
+            alert(msg);
+        } finally {
+            setContactLoading(false);
         }
     };
 
@@ -489,26 +510,31 @@ function PropertyDetails() {
                                     </a>
                                 )}
 
-                                {property.owner.email && (
-                                    <a
-                                        href={`mailto:${property.owner.email}?subject=Inquiry regarding: ${property.title}`}
+                                {!isOwner && (
+                                    <button
+                                        onClick={handleContactOwner}
+                                        disabled={contactLoading}
                                         style={{
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
                                             gap: "8px",
-                                            background: "#FAF7F2",
+                                            background: "#D9A24C",
                                             color: "#1B2733",
-                                            border: "1px solid #EDE7DA",
-                                            padding: "11px",
+                                            border: "none",
+                                            padding: "12px",
                                             borderRadius: "6px",
-                                            textDecoration: "none",
-                                            fontWeight: "500",
-                                            fontSize: "14px"
+                                            cursor: contactLoading ? "wait" : "pointer",
+                                            fontWeight: "600",
+                                            fontSize: "14px",
+                                            width: "100%",
+                                            transition: "background 0.2s, opacity 0.2s",
+                                            opacity: contactLoading ? 0.7 : 1
                                         }}
                                     >
-                                        <FaEnvelope /> Email Owner: {property.owner.email}
-                                    </a>
+                                        <FaComments />
+                                        {contactLoading ? "Opening chat..." : "Send Message"}
+                                    </button>
                                 )}
                             </div>
                         )}
